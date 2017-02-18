@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/docker/swarmkit/api"
+	"github.com/docker/swarmkit/api/naming"
 	"github.com/docker/swarmkit/manager/state"
 	memdb "github.com/hashicorp/go-memdb"
 )
@@ -25,6 +26,11 @@ func init() {
 					Name:    indexName,
 					Unique:  true,
 					Indexer: serviceIndexerByName{},
+				},
+				indexRuntime: {
+					Name:         indexRuntime,
+					AllowMissing: true,
+					Indexer:      serviceIndexerByRuntime{},
 				},
 				indexNetwork: {
 					Name:         indexNetwork,
@@ -182,7 +188,7 @@ func GetService(tx ReadTx, id string) *api.Service {
 func FindServices(tx ReadTx, by By) ([]*api.Service, error) {
 	checkType := func(by By) error {
 		switch by.(type) {
-		case byName, byNamePrefix, byIDPrefix, byReferencedNetworkID, byReferencedSecretID, byCustom, byCustomPrefix:
+		case byName, byNamePrefix, byIDPrefix, byRuntime, byReferencedNetworkID, byReferencedSecretID, byCustom, byCustomPrefix:
 			return nil
 		default:
 			return ErrInvalidFindBy
@@ -236,6 +242,25 @@ func (si serviceIndexerByName) FromObject(obj interface{}) (bool, []byte, error)
 }
 
 func (si serviceIndexerByName) PrefixFromArgs(args ...interface{}) ([]byte, error) {
+	return prefixFromArgs(args...)
+}
+
+type serviceIndexerByRuntime struct{}
+
+func (si serviceIndexerByRuntime) FromArgs(args ...interface{}) ([]byte, error) {
+	return fromArgs(args...)
+}
+
+func (si serviceIndexerByRuntime) FromObject(obj interface{}) (bool, []byte, error) {
+	s := obj.(serviceEntry)
+	r, err := naming.Runtime(s.Spec.Task)
+	if err != nil {
+		return false, nil, nil
+	}
+	return true, []byte(r + "\x00"), nil
+}
+
+func (si serviceIndexerByRuntime) PrefixFromArgs(args ...interface{}) ([]byte, error) {
 	return prefixFromArgs(args...)
 }
 
