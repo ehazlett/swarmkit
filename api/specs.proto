@@ -5,6 +5,7 @@ package docker.swarmkit.v1;
 import "types.proto";
 import "gogoproto/gogo.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/any.proto";
 
 // Specs are container objects for user provided input. All creations and
 // updates are done through spec types. As a convention, user input from a spec
@@ -102,6 +103,7 @@ message TaskSpec {
 		NetworkAttachmentSpec attachment = 8;
 		ContainerSpec container = 1;
 		PluginSpec plugin = 10;
+		google.protobuf.Any custom = 11;
 	}
 
 	// Resource requirements for the container.
