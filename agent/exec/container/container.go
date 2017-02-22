@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api/types"
 	enginecontainer "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/events"
@@ -190,6 +191,17 @@ func (c *containerConfig) hostConfig() *enginecontainer.HostConfig {
 		GroupAdd:     c.spec().Groups,
 		PortBindings: c.portBindings(),
 	}
+
+	if p := c.spec().SecurityProfiles.Linux; p != nil {
+		c := []string{}
+		for _, cap := range p.Capabilities {
+			c = append(c, cap.String())
+		}
+
+		hc.CapAdd = c
+	}
+
+	logrus.Debugf("CAPS: %+v", hc.CapAdd)
 
 	// The format of extra hosts on swarmkit is specified in:
 	// http://man7.org/linux/man-pages/man5/hosts.5.html
