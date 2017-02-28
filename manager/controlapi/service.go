@@ -206,6 +206,8 @@ func validateTaskSpec(taskSpec api.TaskSpec) error {
 		if err := validatePluginSpec(taskSpec.GetPlugin()); err != nil {
 			return err
 		}
+	case *api.TaskSpec_Custom:
+		return nil
 	default:
 		return grpc.Errorf(codes.Unimplemented, "RuntimeSpec: unimplemented runtime in service spec")
 	}
