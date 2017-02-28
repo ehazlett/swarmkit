@@ -15,7 +15,6 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/go-connections/nat"
-	"github.com/docker/swarmkit/agent/exec"
 	"github.com/docker/swarmkit/api"
 	"github.com/docker/swarmkit/api/naming"
 	"github.com/docker/swarmkit/template"
@@ -48,7 +47,7 @@ func newContainerConfig(t *api.Task) (*containerConfig, error) {
 func (c *containerConfig) setTask(t *api.Task) error {
 	container := t.Spec.GetContainer()
 	if container == nil {
-		return exec.ErrRuntimeUnsupported
+		return nil
 	}
 
 	if container.Image == "" {
